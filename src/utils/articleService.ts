@@ -2,10 +2,11 @@ import { Article } from "./types";
 
 export async function getArticleData(id: string): Promise<Article | null> {
     try {
-        const response = await fetch(`http://localhost:3003/${id}`, {
+        // const response = await fetch(`https://dummyjson.com/posts/${id}`, { // api teste
+        const response = await fetch(`http://api:3003/articles/${id}`, {
             cache: 'force-cache',
             next: {
-                revalidate: 60 // cache de 60 segundos na página
+                revalidate: 60 // cache 60 segundos
             }
         } );
 

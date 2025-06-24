@@ -4,6 +4,7 @@ import { formatDate } from "@/utils/dateFormatter";
 import { extractKeywords } from "@/utils/keywordExtractor";
 import { Metadata } from "next";
 import { getArticleData } from "@/utils/articleService";
+import TextToSpeechWrapper from './TextToSpeechWrapper';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const article = await getArticleData(params.id);
@@ -45,19 +46,28 @@ export async function ArticleInfo({ id }: { id: string }) {
     //Teste para demorar o retorno
     // await new Promise(resolve => setTimeout(resolve, 4000));
 
-    // const response = await fetch(`https://dummyjson.com/posts/${id}`, { // api teste
-    const response = await fetch(`http://localhost:3003/${id}`, {
-        cache: 'force-cache',
-        next: {
-            revalidate: 60 //cache de 60 segundos na pagina
-        }
-    });
+    let response;
 
-    if (!response.ok) {
+    try {
+        // response = await fetch(`https://dummyjson.com/posts/${id}`, { // api teste
+        response = await fetch(`http://api:3003/articles/${id}`, {
+            cache: 'force-cache',
+            next: {
+                revalidate: 60
+            }
+        });
+    } catch (error) {
+        console.error(error);
+    }
+
+    if (!response) {
         return (
             <div className="container mx-auto py-8 px-4 text-center text-red-500 max-w-3xl">
                 <p className="text-xl font-semibold mb-4">Erro ao carregar o artigo.</p>
-                <p className="text-lg mb-6">Artigo com ID <span className="font-bold">{id}</span> não encontrado ou houve um problema na requisição.</p>
+                <p className="text-lg mb-6">Artigo com ID
+                    <span className="font-bold">{id}</span>
+                    não encontrado ou houve um problema na requisição.
+                </p>
                 <Link href="/" className="text-blue-600 hover:underline mt-4 inline-block text-base">
                     &larr; Voltar para a página inicial
                 </Link>
@@ -69,6 +79,11 @@ export async function ArticleInfo({ id }: { id: string }) {
 
     return (
         <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-black shadow-lg rounded-lg mt-8 mb-8 max-w-3xl">
+            <div className="flex justify-end mb-4">
+                <Link href="/" className="text-blue-600 hover:underline inline-block">
+                    &larr; Voltar para a página inicial
+                </Link>
+            </div>
             <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4">
                 {data.title}
             </h1>
@@ -81,6 +96,7 @@ export async function ArticleInfo({ id }: { id: string }) {
                 )}
             </div>
             <div className="text-lg text-white leading-relaxed space-y-4">
+                <TextToSpeechWrapper text={data.content} />
                 <p>{data.content}</p>
             </div>
         </div>

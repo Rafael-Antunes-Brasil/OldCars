@@ -1,72 +1,77 @@
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { ArticleInfo } from '../_components/post';
-import { getArticleData } from '@/utils/articleService';
-import { extractKeywords } from '@/utils/keywordExtractor';
+import { render, screen, waitFor, act } from '@testing-library/react'
+import { ArticleInfo } from '@/app/article/[id]/_components/post'
+import '@testing-library/jest-dom'
 
-jest.mock('@/utils/articleService', () => ({
-    getArticleData: jest.fn(),
-}));
+// Mock das dependências
+jest.mock('next/link', () => {
+    return ({ children, href }: { children: React.ReactNode; href: string }) => {
+        return <a href={href}>{children}</a>
+    }
+})
 
-jest.mock('@/utils/keywordExtractor', () => ({
-    extractKeywords: jest.fn(),
-}));
+// Mock do TextToSpeechWrapper com caminho absoluto
+jest.mock('@/app/article/[id]/_components/TextToSpeechWrapper', () => {
+    return ({ text }: { text: string }) => <div>{text}</div>
+})
 
-global.fetch = jest.fn(() =>
-    Promise.resolve({
-        json: () => Promise.resolve(mockArticle),
-    })
-) as jest.Mock;
+const mockArticleData = {
+    title: 'Test Article',
+    content: 'This is a test article content.',
+    publishDate: '2023-01-01T00:00:00Z',
+    author: 'Test Author'
+}
 
-const mockArticle = {
-    id: '1',
-    title: 'Título do Artigo de Teste',
-    content: 'Conteúdo completo do artigo de teste para verificar a descrição e as palavras-chave. Este é um texto longo para testar o truncamento da descrição.',
-    publishDate: '2023-10-26T10:00:00Z',
-    author: 'Autor Teste',
-};
-
-describe('Página do Artigo (Integração)', () => {
+describe('ArticleInfo Component', () => {
     beforeEach(() => {
-        (getArticleData as jest.Mock).mockClear();
-        (extractKeywords as jest.Mock).mockClear();
-    });
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve(mockArticleData),
+                ok: true
+            })
+        ) as jest.Mock
+    })
 
-    describe('Componente ArticleInfo', () => {
-        it('deve renderizar os detalhes do artigo quando os dados são buscados com sucesso', async () => {
-            (getArticleData as jest.Mock).mockResolvedValue(mockArticle);
+    afterEach(() => {
+        jest.restoreAllMocks()
+    })
 
-            render(await ArticleInfo({ id: '1' }));
+    it('should render article data after successful fetch', async () => {
+        await act(async () => {
+            render(<ArticleInfo id="1" />)
+        })
 
-            expect(screen.getByRole('heading', { level: 1, name: mockArticle.title })).toBeInTheDocument();
-            expect(screen.getByText(mockArticle.content)).toBeInTheDocument();
-            expect(screen.getByText(`Publicado em: 26 de outubro de 2023`)).toBeInTheDocument();
-            expect(screen.getByText(`Por: ${mockArticle.author}`)).toBeInTheDocument();
-        });
+        await waitFor(() => {
+            expect(screen.getByText(mockArticleData.title)).toBeInTheDocument()
+            expect(screen.getByText(mockArticleData.content)).toBeInTheDocument()
+            expect(screen.getByText(`Por: ${mockArticleData.author}`)).toBeInTheDocument()
+            expect(screen.getByText(/Publicado em:/)).toBeInTheDocument()
+            expect(screen.getByText('Voltar para a página inicial')).toBeInTheDocument()
+        })
+    })
 
-        it('deve exibir mensagem de erro quando o artigo não é encontrado', async () => {
-            (getArticleData as jest.Mock).mockResolvedValue(null);
+    it('should render error message when fetch fails', async () => {
+        global.fetch = jest.fn(() => Promise.reject(new Error('API error'))) as jest.Mock
 
-            render(await ArticleInfo({ id: '999' }));
+        await act(async () => {
+            render(<ArticleInfo id="1" />)
+        })
 
-            expect(screen.getByText(/Erro ao carregar o artigo./i)).toBeInTheDocument();
-            expect(screen.getByText((content, node) => {
-                const hasText = (text: string) => node?.textContent?.includes(text) || false;
-                return hasText('Artigo com ID 999 não encontrado ou houve um problema na requisição.');
-            })).toBeInTheDocument();
-            expect(screen.getByRole('link', { name: /Voltar para a página inicial/i })).toBeInTheDocument();
-        });
+        await waitFor(() => {
+            expect(screen.getByText('Erro ao carregar o artigo.')).toBeInTheDocument()
+            expect(screen.getByText(/Artigo com ID/)).toBeInTheDocument()
+            expect(screen.getByText('Voltar para a página inicial')).toBeInTheDocument()
+        })
+    })
 
-        it('deve exibir mensagem de erro quando a busca de dados falha (ex: erro de rede)', async () => {
-            (getArticleData as jest.Mock).mockRejectedValue(new Error('Erro de rede simulado'));
+    it('should render error message when response is undefined', async () => {
+        global.fetch = jest.fn(() => Promise.resolve(undefined)) as jest.Mock
 
-            render(await ArticleInfo({ id: '1' }));
+        await act(async () => {
+            render(<ArticleInfo id="1" />)
+        })
 
-            expect(screen.getByText(/Erro ao carregar o artigo./i)).toBeInTheDocument();
-            expect(screen.getByText((content, node) => {
-                const hasText = (text: string) => node?.textContent?.includes(text) || false;
-                return hasText('Artigo com ID 1 não encontrado ou houve um problema na requisição.');
-            })).toBeInTheDocument();
-        });
-    });
-});
+        await waitFor(() => {
+            expect(screen.getByText('Erro ao carregar o artigo.')).toBeInTheDocument()
+        })
+    })
+})

@@ -3,14 +3,28 @@ import { Article } from "@/utils/types";
 import Link from "next/link";
 
 export default async function Home() {
-  // const response = await fetch('https://dummyjson.com/posts') // Api para teste
-  const response = await fetch('http://localhost:3003/')
-  const articles: Article[] = await response.json();
-  // console.log(articles);
+  let articles: Article[] = [];
+
+  try {
+    // response = await fetch('https://dummyjson.com/posts') // Api para teste
+    const response = await fetch('http://api:3003/articles/', {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar artigos: ${response.status}`);
+    }
+
+    const json = await response.json();
+
+    articles = Array.isArray(json) ? json : [];
+  } catch (error) {
+    console.error(error);
+  }
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl mt-5 mb-8 font-bold text-left text-white">
+      <h1 className="text-3xl mt-5 mb-8 font-bold text-left text-white px-4 sm:px-6 lg:px-8">
         Venha conhecer um pouco mais do meu mundo!!
       </h1>
       <div className="px-4 md:px-6 lg:px-8 mb-8">

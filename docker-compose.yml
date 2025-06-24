@@ -9,3 +9,9 @@ services:
       - .:/app
       - /app/node_modules
     command: npm run dev
+    networks:
+      - projeto-network
+
+networks:
+  projeto-network:
+    external: true
