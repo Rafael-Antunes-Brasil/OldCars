@@ -31,11 +31,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body
-        className={`antialiased min-h-screen flex flex-col`}
+        className="antialiased min-h-screen flex flex-col bg-zinc-900 text-white"
+        suppressHydrationWarning
       >
         <Header />
-        {children}
+        <main className="flex-1">{children}</main>
       </body>
     </html>
   );
