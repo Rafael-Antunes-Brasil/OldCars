@@ -1,4 +1,4 @@
-import { ArticleInfo } from "../[id]/_components/post";
+import { ArticleInfoWrapper } from "../[id]/_components/post";
 import { extractKeywords } from "@/utils/keywordExtractor";
 import { Metadata } from "next";
 import { getArticleData } from "@/utils/articleService";
@@ -45,7 +45,7 @@ export default async function DetailArticle({ params }: { params: Promise<{ id: 
 
     return (
         <div>
-            <ArticleInfo id={id} />
+            <ArticleInfoWrapper id={id} />
         </div>
     )
 }
