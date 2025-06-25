@@ -6,7 +6,7 @@ testes com Jest e Testing Library, Docker, e segue boas práticas de performance
 
 ---
 
-## 🚀 Tecnologias e Ferramentas
+## 📦 Tecnologias utilizadas
 
 - [Next.js] (App Router)
 - [React]
@@ -17,16 +17,25 @@ testes com Jest e Testing Library, Docker, e segue boas práticas de performance
 - [Docker_Compose]
 - [Acessibilidade] e [SEO_técnico]
 
-## 🚀 Como rodar o projeto
+### Pré-requisitos
+
+Antes de iniciar, você precisa ter instalado:
+
+- [Node.js v18+](https://nodejs.org/)
+- [Docker](https://www.docker.com/products/docker-desktop)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Git](https://git-scm.com/)
+
 ℹ️ Obs.: Projeto foi feito no Windows 11
+
+## 🚀 Como rodar o projeto
 
 ```bash
 1. **Clone o repositório:**
-git clone https://github.com/Rafael-Antunes-Brasil/OldCars
-cd OldCars
+git clone https://github.com/Rafael-Antunes-Brasil/old_cars
+cd old_cars
 
-Instale as dependências:
-npm install
+Altere o Arquivo .env.example para .env
 
 🐳 Usando com Docker
 Build e execução do container:
