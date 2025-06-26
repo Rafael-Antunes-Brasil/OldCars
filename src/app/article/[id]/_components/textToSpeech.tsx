@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type Props = {
     text: string;
@@ -8,23 +8,32 @@ type Props = {
 
 export default function TextToSpeech({ text }: Props) {
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [utterance, setUtterance] = useState<SpeechSynthesisUtterance | null>(null);
 
     const speak = () => {
-        const utterance = new SpeechSynthesisUtterance(text);
+        const speechUtterance = new SpeechSynthesisUtterance(text);
         const voices = window.speechSynthesis.getVoices();
         const ptVoice = voices.find(v => v.lang === 'pt-BR');
-        if (ptVoice) utterance.voice = ptVoice;
 
-        utterance.onstart = () => setIsSpeaking(true);
-        utterance.onend = () => setIsSpeaking(false);
+        if (ptVoice) speechUtterance.voice = ptVoice;
 
-        window.speechSynthesis.speak(utterance);
+        speechUtterance.onstart = () => setIsSpeaking(true);
+        speechUtterance.onend = () => setIsSpeaking(false);
+
+        setUtterance(utterance);
+        window.speechSynthesis.speak(speechUtterance);
     };
 
     const stop = () => {
         window.speechSynthesis.cancel();
         setIsSpeaking(false);
     };
+
+    useEffect(() => {
+        return () => {
+            window.speechSynthesis.cancel();
+        }
+    }, []);
 
     return (
         <div className="flex justify-end mt-4">
